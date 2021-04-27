@@ -1,0 +1,321 @@
+What You Should Know
+1. Basic IT concepts
+2. DevOps concepts
+3. Docker basics
+
+What You Should Have Installed
+1. Minikube
+2. kubectl
+
+Shell experience is helpful
+
+Kubernetes Native Tools
+
+kubectl
+-The Kubernetes client
+-Demos of how it's being used in enterprises
+-Common commands
+
+Minikube, kops, kubeadm
+-Most common ways people install Kubernetes
+-Minikube for local
+-Kops and kubeadm for clouds and bare metal
+
+General Management Tools
+Dashboard, kubefed, Kompose, and Helm
+-Visualization with Dashboard
+-Large cluster federation with kubefed
+-Exporting from Docker with Kompose
+-Large application management with Helm
+
+Quiz 1
+
+Question 1 of 3
+
+"kubectl -n my-namespace delete po,svc --all" will delete all pods and services, including uninitialized ones, in namespace my-namespace.
+-True
+
+Question 2 of 3
+
+How would you return all the pod data in the json format using the kubectl command?
+-kubectl get pods -o json
+
+Question 3 of 3
+
+What does "kubectl get services --sort-by=.metadata.name" do?
+-It returns all the services sorted by their name in an ascending fashion.
+
+Minikube Install Requirements 
+
+Requires container platform like Docker
+
+Advanced Features
+-Features
+1) Add-Ons
+2) Kubernetes Version
+-Pass the version of Kubernetes that you want to run when you start Minikube by adding the flag: 
+--kubernetes-version
+3) Private Repos
+-Use the --insecure-registry flag with the Minikube start command to enable insecure Docker registries OR 
+-Enable the registry-creds add-on to communicate with the Google Container Registry (GCR), the Amazon EC2 Container Registry (ECR), and private Docker registries 
+
+EC2 keeps pace with kubernetes version 
+
+Kubeadm
+
+Create K8s Clusters
+kubeadm allows you to create a Kubernetes cluster on machines running the following:
+
+-Ubuntu 16.04 or higher
+-CentOS 7
+-Devian 9
+-Red Hat Enterprise Linux 7
+
+Cluster Setup: Prequisites
+
+Download and install:
+-Docker
+-kubeadm
+-kubelet
+-kubectl
+
+Steps
+1: Install the kubeadm tool on all the hosts that you want as a part of your Kubernetes cluster.
+
+2: On the master node, run kubeadm init.
+-Runs checks to verify selected node can run Kubernetes
+-Downloads and installs cluster database and sets up control plane components.
+-Provides a join token that will join any worker node to the Kubernetes cluster
+
+Protect your join token, because it allows any machine to join your cluster
+
+3: 
+-You'll need a pod network so that the pod can communicate
+-kubeadm only supports networks that are a part of the ContainerNetwork Interface (CNI) spec and also doesn't support kubenet
+-Run the kubectl apply command to add most of the network plugins
+
+4: Run the kubeadm join command on the worker nodes using the join token provided at the end of the kubeadm init provisioning step described in step 2.
+
+Benefit of using kubeadm is that an easy kubernetes install process using kubeadm == a great user experience
+
+Drawbacks of kubeadm
+-Lack of support for multi-master instances
+--Might happen in later > v1.8 (check docs)
+--Backup configuration data
+-Some add-ons are still in alpha phase
+
+If you're happy with a single node cluster, then use kubeadm for your nodes
+
+kops
+
+Kubernetes Operations (kops)
+Allow you to create, destroy, upgrade, and maintain production-grade, highly available Kubernetes clusters from the command line
+
+kops Requirements
+-kops
+-kubectl
+-AWS credentials
+-AWS CLI tools
+
+AWS Requirements
+-Set up an Amazon Identity and Access Management (IAM) account
+-Full access to S3, EC2, Route53, and IAM
+-Create a DNS record for the Kubernetes service
+
+Setup a Cluster
+-export
+--NAME=mycluster.k8s.local
+-export
+--KOPS_STATE_STORE=s3://prefix-example-com-state-store
+
+Build Your Cluster
+kops create cluster \ --zones us-west-2a \ ${NAME}
+
+kops create cluster Command
+-Results in a configuration file for what your cluster is going to look like
+-Verify everything is as expected by running kops edit cluster followed by the name of the cluster
+
+kops update Command
+Run:
+-kops update cluster <cluster name>
+
+Builds the cluster per spec
+
+kubectl is listening
+-Use kubectl get nodes to alert when nodes are ready
+-After deployment, run kops validate cluster to verify everything is working as expected
+
+There's a lot more to learn so check out the documentation
+
+Deploy to AWS
+-kops looks more like a command-line tool that you can use to run create/delete/get operations
+-Kubernetes administrators like this because it's easily understandable
+-It allows for clusters to be provisioned as highly available 
+
+Caveat: Verify that AWS doesn't already have a managed service for Kubernetes
+
+Quiz 2
+
+Question 1 of 2
+
+Kubeadm is an administrative dashboard for kubernetes.
+-False
+
+Question 2 of 2
+
+What does the "kops" acronym mean?
+-Kubernetes Operations
+
+Use Cases for Kubernetes Dashboard
+1. Manage running applications
+2. Troubleshoot any issues with applications
+3. Manage the entire Kubernetes cluster
+
+Minikube Add-On
+-Dashboard comes installed as an add-on in Minikube
+-If you're running Kubernetes on a real cluster, you'll need to install Dashboard as an application:
+
+https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+Access via Browser
+1. Set up kubectl proxy, which sets up an HTTP proxy to the Kubernetes API server
+
+2. Visit the browser at http://localhost:8001/ui
+
+Useful components:
+Cluster Page
+Kubernetes overview
+Pod page
+
+Out-of-the-Box Tooling
+
+Access
+-Login page in K8s v1.7
+-Useful feature in an enterprise with a lot of users
+
+Federation and kubefed
+
+Federation Key Features
+-Sync resources across clusters
+-Cross-cluster discovery
+
+Benefits of Federation
+-Create highly available clusters in different regions (single-cloud scenario)
+-Avoid vendor lock-in by migrating applications across clusters (hybrid-cloud scenario)
+-Low latency creates a better user experience
+-Smaller clusters = easier management and fault isolation
+-Avoids scalability limits on pods and nodes
+
+kubefed
+Tool to get federation going
+
+kubebfed Workflow
+1. Set up clusters in different regions.
+2. Configure the DNS required for each of these clusters.
+3. Initialize the kubefed tool to set up your federation control pane
+
+Add Clusters to Your Federation
+With the control plane initialized, you can actually add your existing clusters to kubefed as federated clusters by passing the cluster config to the clusters of each of them.
+
+Check out documentation, because there's a lot going on with kubefed.
+
+Caveats:
+-Federation is a young topic in kubernetes as of 1.8
+-Kubernetes Slack community can help with questions about kubefed
+
+Kompose
+What is the Kompose Tool?
+-Kompose tool converts Docker Compose files into Kubernetes objects like deployments and services
+-Provides an export path for people comfortable with Docker Compose to create Kubernetes objects using the Kubernetes-style YAML
+
+Why?
+
+History
+-Each vendor used individual standards to describe container objects.
+
+Present
+-Container community is standardized on two frameworks: Docker Compose and the Kubernetes objects.
+
+Path from Docker Tooling --> Kubernetes
+
+Kompose is a translator. Review the translation to make sure the outcome is as expected.
+
+Kompose Installation Process
+1. Download the binary
+2. Place the binary in your path
+3. Convert your compose files (Use kompose convert to read Docker Compose and create Kubernetes objects in the same directory)
+4. Run files with kubectl create command
+
+Kompose can get you up and running with Kubernetes quickly if you have Docker Compose files to describe your architecture.
+
+Caveat
+-If you're not sure what you're doing, or are unfamiliar with the Kubernetes objects and resources, you might accept the wrong kind of object because Kompose misinterpreted it.
+
+Not all Docker Compose keys are transposed to Kubernetes
+
+Helm
+-Helm is a tool that streamlines the installation and management of Kubernetes applications. It's like a package manager for Kubernetes.
+
+Helm Manages Charts: packages of preconfigured Kubernetes resources.
+
+Helm Architecture:
+Local Machine --> Tiller
+
+Tiller: server component that manages the releases and installation of Helm charts
+
+Helm chart: would, at minimum, contain the following
+1. Chart
+2. Template
+3. Values
+
+Chart.yaml
+-contains high-level metadata information about your chart. It must contain a chart name and version number
+
+Template file
+-contains your kubernetes resources and the components that will make up your application. The template will look very similar to a kubernetes application with the exception that it contains parameters that can be passed in as template values through the Values.yaml file that sit alongside the template
+
+Running Helm Install
+-Sends Helm chart to Tiller
+-Tiller compiles template and values into an application
+-Version the application
+-Deploys to a Kubernetes cluster
+
+Helm Client Tool
+-Allows you to install and manage applications in your cluster
+-Makes it easier to configure and manage larger Kubernetes applications
+
+Top 3 reasons why Karthik likes Helm
+
+Reason #1: Templates
+Helm introduces templating into your applications
+
+Reason #2: Versioning 
+Applications can be versioned and rolled back to an earlier version.
+
+Reason #3: Application Packaging 
+Helm makes getting started with a lot of K8s projects easy.
+
+Quiz 3
+Question 1 of 4
+
+Helm is like a package manager for Kubernetes.
+-True
+
+Question 2 of 4
+
+What add-on isn't supported in minikube on Kubernetes 1.8?
+-Istio
+
+Question 3 of 4
+
+What is a benefit of Kubernetes federation?
+-low latency creates a better ux
+-avoids scalability limits on pods and nodes
+-creates highly available clusters in different regions
+-all of the above
+
+Question 4 of 4
+
+Which is these is NOT a use case for the kubernetes dashboard?
+-installing new Kubernetes cluster
+-You cannot install a new kubernetes cluster with the kubernetes 1.8 dashboard.
